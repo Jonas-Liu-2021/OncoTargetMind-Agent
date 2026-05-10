@@ -1,12 +1,12 @@
-<div align="right">
+# 🧬 OncoTargetMind Agent
+
+<p align="center">
   <a href="#english">English</a> | <a href="#chinese">中文</a>
-</div>
+</p>
 
 ---
 
 <a id="english"></a>
-
-# 🧬 OncoTargetMind Agent
 
 AI-powered **cancer therapeutic target discovery** agent for precision oncology research.
 
@@ -84,19 +84,31 @@ app/
 
 ## 🔬 Example
 
-**Input:**
+**Input** (free-text, English or Chinese):
 
-> NSCLC patient with EGFR L858R mutation and MET amplification.
-> up: MYC, CCND1
-> down: TP53, CDKN2A
+> 子宫内膜癌样本中 PTEN 下调，PIK3CA 突变，CCND1 上调，请评估潜在靶点。
 
-**Output:**
+**Output** (Markdown report):
 
-| Target | Score | Matched Drugs |
-|--------|-------|---------------|
-| EGFR | 32/30 | Osimertinib, Gefitinib, Erlotinib |
-| BRAF | 31/30 | Vemurafenib, Dabrafenib, Encorafenib |
-| CDKN2A | 23/30 | Palbociclib, Ribociclib, Abemaciclib |
+| # | Target | Score | Source | Matched Drugs |
+|---|--------|-------|--------|---------------|
+| 1 | PIK3CA | 26/30 | CIViC (A-level) | Alpelisib, Inavolisib, Taselisib |
+| 2 | CCND1 | 18/30 | DGIdb | Palbociclib, Ribociclib, Abemaciclib |
+| 3 | PTEN | 18/30 | DGIdb | Everolimus, Ipatasertib |
+
+**Literature evidence** (PIK3CA):
+
+- **Assessment**: moderate (confidence: medium) · **Action**: ⬆ BOOST
+- **Evidence types**: drug_sensitivity, clinical, functional
+- **Summary**: CIViC A-level evidence for PIK3CA in breast cancer; RAG confirms PIK3CA mutation as
+  therapeutic target in endometrial cancer via PI3Kα inhibitor studies (PMID 41976288, PMID 40360883).
+- **Limitations**: Evidence from wildtype context or non-mutation-specific studies; clinical trials ongoing.
+
+| Dimension | Score |
+|-----------|-------|
+| Druggability | 10 |
+| Specificity | 8 |
+| Evidence Level | 8 |
 
 ## ⚠️ Disclaimer
 
