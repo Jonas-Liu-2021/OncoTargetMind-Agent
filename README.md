@@ -193,6 +193,11 @@ app/
 
 **Source**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 papers via 3 queries
 
+| 📄 PMID | Title | Year |
+|---------|-------|------|
+| 41563767 | MIG-6 Regulates HDAC1 in PTEN-Deficient EC | 2026 |
+| 41383404 | Targeting synthetic lethality in ovarian and endometrial cancers | 2025 |
+
 </details>
 
 ## ⚠️ Disclaimer
@@ -379,6 +384,11 @@ agent/
 **局限**: 仅临床前（小鼠模型）；无临床数据。
 
 **来源**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 篇文献 via 3 条查询
+
+| 📄 PMID | 标题 | 年份 |
+|---------|------|------|
+| 41563767 | MIG-6 Regulates HDAC1 in PTEN-Deficient EC | 2026 |
+| 41383404 | Targeting synthetic lethality in ovarian and endometrial cancers | 2025 |
 
 </details>
 
