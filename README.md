@@ -113,31 +113,87 @@ app/
 
 ## 🔬 Example
 
-**Input** (free-text, English or Chinese):
+**Input** (free-text, Chinese — English also supported):
 
 > 子宫内膜癌样本中 PTEN 下调，PIK3CA 突变，CCND1 上调，请评估潜在靶点。
 
-**Output** (Markdown report):
+**Result:**
 
 | # | Target | Score | Source | Matched Drugs |
 |---|--------|-------|--------|---------------|
-| 1 | PIK3CA | 26/30 | CIViC (A-level) | Alpelisib, Inavolisib, Taselisib |
-| 2 | CCND1 | 18/30 | DGIdb | Palbociclib, Ribociclib, Abemaciclib |
-| 3 | PTEN | 18/30 | DGIdb | Everolimus, Ipatasertib |
+| 1 | PIK3CA | 27/30 | CIViC (B-level, matched) | Taselisib, Capivasertib, Palbociclib |
+| 2 | CCND1 | 13/30 | DGIdb + RAG ↑ | Palbociclib, Ribociclib, Abemaciclib |
+| 3 | PTEN | 13/30 | DGIdb + RAG ↑ | Ipatasertib, Capivasertib, Everolimus |
 
-**Literature evidence** (PIK3CA):
+<details>
+<summary>🔍 PIK3CA — CIViC matched (click to expand)</summary>
 
-- **Assessment**: moderate (confidence: medium) · **Action**: ⬆ BOOST
-- **Evidence types**: drug_sensitivity, clinical, functional
-- **Summary**: CIViC A-level evidence for PIK3CA in breast cancer; RAG confirms PIK3CA mutation as
-  therapeutic target in endometrial cancer via PI3Kα inhibitor studies (PMID 41976288, PMID 40360883).
-- **Limitations**: Evidence from wildtype context or non-mutation-specific studies; clinical trials ongoing.
+| Dimension | Score | Reasoning |
+|-----------|-------|-----------|
+| Druggability | 10 | CIViC B-level, predictive evidence |
+| Specificity | 8 | Tumor matched: Endometrial Cancer |
+| Evidence Level | 9 | CIViC base + tumor match (+1) |
 
-| Dimension | Score |
-|-----------|-------|
-| Druggability | 10 |
-| Specificity | 8 |
-| Evidence Level | 8 |
+**Matched Drugs** (14): Taselisib, Capivasertib, Pictilisib, Palbociclib, Temsirolimus, Trametinib, Everolimus, Ridaforolimus, Cabozantinib, plus 5 more.
+
+> 🔬 *CIViC: 10 items, best level B, predictive, tumors matched by string matching. No RAG triggered — CIViC quality sufficient.*
+</details>
+
+<details>
+<summary>📚 CCND1 — RAG-triggered with literature evidence (click to expand)</summary>
+
+| Dimension | Score | Reasoning |
+|-----------|-------|-----------|
+| Druggability | 5 | DGIdb drugs found, cancer context unverified |
+| Specificity | 5 | Has drug interactions |
+| Evidence Level | 3 | DGIdb-only base |
+
+**Matched Drugs** (23): Palbociclib, Ribociclib, Abemaciclib, Briciclib, Tagitinin A, plus 18 more.
+
+---
+
+**Literature Assessment** — `moderate` (confidence: medium) · Action: ⬆ BOOST
+
+**Evidence Types**: driver, therapeutic_target, drug_sensitivity, functional, preclinical
+
+> CCND1 overexpression is implicated in endometrial cancer. Paper 2 (PMID 39940659) shows CCND1 overexpression is common in early-stage endometrioid carcinoma. Paper 4 (PMID 41560755) directly links CCND1/CDK4/6 axis to CDK4/6 inhibitor sensitivity in endometrial cancer, demonstrated via CRISPR screens and functional assays.
+
+**Limitations**: Preclinical only; no clinical trial data yet.
+
+**Source**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 papers via 3 queries
+
+| 📄 PMID | Title | Year |
+|---------|-------|------|
+| 41744888 | Endocrine Therapy for Endometrial Carcinoma | 2026 |
+| 39940659 | Cyclin D1 Expression: Prognostic Value in Endometrial Cancer | 2025 |
+| 41560755 | NEK6 as determinant of CDK4/6 inhibitor sensitivity in EC | 2025 |
+
+</details>
+
+<details>
+<summary>📚 PTEN — RAG-triggered with literature evidence (click to expand)</summary>
+
+| Dimension | Score | Reasoning |
+|-----------|-------|-----------|
+| Druggability | 5 | DGIdb drugs found |
+| Specificity | 5 | Has drug interactions |
+| Evidence Level | 3 | DGIdb-only base |
+
+**Matched Drugs** (22): Ipatasertib, Capivasertib, Everolimus, AZD8186, AKT Inhibitor MK2206, plus 17 more.
+
+---
+
+**Literature Assessment** — `moderate` (confidence: medium) · Action: ⬆ BOOST
+
+**Evidence Types**: therapeutic_target, preclinical
+
+> PTEN-deficient mouse model of endometrioid endometrial cancer suggests HDAC1 inhibition as therapeutic target (PMID 41563767). Review discusses PTEN mutations in endometrial cancer and synthetic lethality concept (PMID 41383404).
+
+**Limitations**: Preclinical only (mouse models); no clinical data.
+
+**Source**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 papers via 3 queries
+
+</details>
 
 ## ⚠️ Disclaimer
 
