@@ -1,0 +1,16 @@
+# API keys
+.env
+
+# Local models
+models/
+
+# Outputs
+outputs/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.claude/
+.vscode/
