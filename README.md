@@ -1,12 +1,10 @@
 # 🧬 OncoTargetMind Agent
 
-
-
 <p align="center">
   <a href="#english">English</a> | <a href="#chinese">中文</a>
 </p>
 
-
+---
 
 <a id="english"></a>
 
@@ -16,14 +14,43 @@ AI-powered **cancer therapeutic target discovery** agent for precision oncology 
 
 ## 🧠 How It Works
 
-```
-User Input (free-text, EN/ZH)
-  → Intent Router (rule + LLM guard)
-  → Structured Parser (DeepSeek)
-  → Evidence Pipeline:
-       CIViC → DGIdb → PubMed (Europe PMC) → LLM extraction
-  → 3D Scoring (druggability / specificity / evidence level)
-  → Markdown Report
+```mermaid
+flowchart TD
+    A[User Input] --> B{Intent Router}
+    B -->|clinical| C[Safety Rejection]
+    B -->|off-topic| C
+    B -->|target_analysis| D[Structured Parser]
+
+    D --> E{Variant?}
+    E -->|yes| F[CIViC Search]
+    E -->|no| G[Expression Gene]
+
+    F --> H{CIViC result?}
+    H -->|A/B predictive| I[High Confidence]
+    H -->|C/D/E| J[Moderate + RAG]
+    H -->|no result| K[DGIdb Search]
+    K --> L[DGIdb + RAG]
+
+    G --> M[DGIdb Search]
+    M --> N[DGIdb + RAG]
+
+    I --> O[3D Scoring]
+    J --> O
+    L --> O
+    N --> O
+
+    O --> P[Markdown Report]
+
+    subgraph RAG["RAG Pipeline"]
+        Q[PubMed Query Builder] --> R[Europe PMC Search]
+        R --> S[LLM Evidence Extraction]
+        S --> T{Boost / Neutral / Penalize}
+    end
+
+    J -.-> RAG
+    L -.-> RAG
+    N -.-> RAG
+    T --> O
 ```
 
 ## 🚀 Quick Start
