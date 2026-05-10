@@ -25,11 +25,7 @@ st.markdown("---")
 # Input section
 st.subheader("Clinical Input")
 
-example_input = (
-    "Patient with NSCLC. NGS panel reveals BRAF V600E mutation, EGFR amplification.\n"
-    "up: MYC, CCND1\n"
-    "down: TP53, CDKN2A"
-)
+example_input = ("Endometrial cancer sample with PTEN downregulation, PIK3CA mutation, CCND1 upregulation. Evaluate potential therapeutic targets.")
 
 user_input = st.text_area(
     "Enter clinical or genomic findings:",

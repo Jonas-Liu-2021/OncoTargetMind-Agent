@@ -113,9 +113,9 @@ app/
 
 ## 🔬 Example
 
-**Input** (free-text, Chinese — English also supported):
+**Input** (free-text):
 
-> 子宫内膜癌样本中 PTEN 下调，PIK3CA 突变，CCND1 上调，请评估潜在靶点。
+> Endometrial cancer sample with PTEN downregulation, PIK3CA mutation, CCND1 upregulation. Evaluate potential therapeutic targets.
 
 **Result:**
 
@@ -207,11 +207,147 @@ MIT
 
 <a id="chinese"></a>
 
-## 🧬 OncoTargetMind Agent（中文简介）
+## 🧬 OncoTargetMind Agent（中文）
 
-面向精准肿瘤学研究的 AI 靶点发现智能体。
+面向精准肿瘤学研究的 **AI 靶点发现智能体**。
 
-输入基因组变异与表达变化 → 匹配药物 → 证据排序 → 输出文献验证报告。
+> 输入基因组变异与表达变化 → **匹配药物** → **证据排序** → **文献验证报告**
 
-> 📝 *Full Chinese README coming soon.*
+## 🚀 快速开始
+
+```bash
+git clone https://github.com/YOUR_USERNAME/OncoTargetMind-Agent.git
+cd OncoTargetMind-Agent
+pip install -r requirements.txt
+```
+
+创建 `.env` 文件写入 DeepSeek API key：
+
+```
+DEEPSEEK_API_KEY=sk-你的key
+```
+
+运行：
+
+```bash
+python run_ui.py    # Streamlit 界面（推荐）
+python run_api.py   # FastAPI 服务
+```
+
+## 🧠 工作流程
+
+```mermaid
+flowchart TD
+    A[用户输入 中/英] --> B{意图路由}
+    B -->|临床敏感| C[安全拦截]
+    B -->|无关话题| C
+    B -->|靶点分析| D[结构化解析]
+
+    D --> E{有变异?}
+    E -->|是| F[CIViC 数据库]
+    E -->|否| G[表达基因]
+
+    F --> H{CIViC 结果?}
+    H -->|A/B 级| I[高置信度]
+    H -->|C/D/E 级| J[中等 + 文献验证]
+    H -->|无结果| K[DGIdb]
+    K --> L[DGIdb + 文献验证]
+
+    G --> M[DGIdb]
+    M --> N[DGIdb + 文献验证]
+
+    I --> O[三维评分]
+    J --> O
+    L --> O
+    N --> O
+
+    O --> P[Markdown 报告]
+
+    subgraph RAG["文献验证流程"]
+        Q[PubMed 查询构建] --> R[Europe PMC 检索]
+        R --> S[LLM 证据提取]
+        S --> T{Boost / Neutral / Penalize}
+    end
+
+    J -.-> RAG
+    L -.-> RAG
+    N -.-> RAG
+    T --> O
+```
+
+## 📊 数据来源
+
+| 来源 | 类型 | 覆盖范围 |
+|------|------|----------|
+| [CIViC](https://civicdb.org) | 专家审编变异证据（A–E 级） | 特定变异 |
+| [DGIdb](https://dgidb.org) | 药物-基因交互数据库 | 全基因组 |
+| [Europe PMC](https://europepmc.org) | 生物医学文献（摘要） | 4000 万+ 论文 |
+| DeepSeek API | 解析 / 路由 / 证据提取 | — |
+
+## 🏗️ 架构
+
+```
+agent/
+├── state.py           # 数据模型
+├── router.py          # 意图路由（规则黑名单 + LLM 分类）
+├── parser.py          # 规则降级解析器
+├── nodes.py           # 5 个 LangGraph 节点
+├── graph.py           # LangGraph 工作流 + 条件边
+├── knowledge.py       # 本地知识库兜底
+└── scoring.py         # 三维评分（满分 30）
+...
+```
+
+## 🔬 示例
+
+**输入**（自由文本，中英文均可）：
+
+> 子宫内膜癌样本中 PTEN 下调，PIK3CA 突变，CCND1 上调，请评估潜在靶点。
+
+**结果**：
+
+| # | 靶点 | 评分 | 来源 | 匹配药物 |
+|---|------|------|------|----------|
+| 1 | PIK3CA | 27/30 | CIViC (B 级, 癌种匹配) | Taselisib, Capivasertib |
+| 2 | CCND1 | 13/30 | DGIdb + 文献 ↑ | Palbociclib, Ribociclib |
+| 3 | PTEN | 13/30 | DGIdb + 文献 ↑ | Ipatasertib, Everolimus |
+
+<details>
+<summary>🔍 PIK3CA — CIViC 直接匹配（点击展开）</summary>
+
+| 维度 | 评分 | 依据 |
+|------|------|------|
+| Druggability | 10 | CIViC B 级 predictive 证据 |
+| Specificity | 8 | 癌种匹配：Endometrial Cancer |
+| Evidence Level | 9 | CIViC 基础分 + 癌种加分 (+1) |
+
+> CIViC 10 条证据，最高 B 级，predictive，字符串匹配到子宫内膜癌。无需触发文献检索。
+</details>
+
+<details>
+<summary>📚 CCND1 — 触发文献检索（点击展开）</summary>
+
+**文献评估** — `moderate`（confidence: medium）· Action: ⬆ BOOST
+
+**证据类型**: driver, therapeutic_target, drug_sensitivity, functional, preclinical
+
+> CCND1 过表达与子宫内膜癌相关。PMID 39940659 显示 CCND1 在早期子宫内膜样癌中高表达。PMID 41560755 通过 CRISPR 筛选证实 CCND1/CDK4/6 轴可作为 CDK4/6 抑制剂治疗靶点。
+
+**局限**: 仅临床前数据，无临床试验。
+
+| 📄 PMID | 标题 | 年份 |
+|---------|------|------|
+| 41744888 | Endocrine Therapy for Endometrial Carcinoma | 2026 |
+| 39940659 | Cyclin D1 Expression in Endometrial Cancer | 2025 |
+| 41560755 | NEK6 and CDK4/6 inhibitor sensitivity in EC | 2025 |
+
+</details>
+
+## ⚠️ 免责声明
+
+本工具仅供**科研使用**。不提供诊断、治疗方案选择、用药建议、剂量推荐或预后判断。临床决策请咨询正规医院肿瘤科医生。
+
+## 📄 许可证
+
+MIT
 
