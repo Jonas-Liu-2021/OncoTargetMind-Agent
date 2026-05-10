@@ -81,7 +81,7 @@ python run_api.py
 
 | Source | Type | Coverage |
 |--------|------|----------|
-| [CIViC](https://civicdb.org) | Expert-curated variant evidence (A–E levels) | Specific variants |
+| [CIViC](https://civicdb.org) | Expert-curated variant evidence (A–E levels) | Variants in cancers |
 | [DGIdb](https://dgidb.org) | Drug-gene interaction database | Genome-wide |
 | [Europe PMC](https://europepmc.org) | Biomedical literature (abstracts) | 40M+ papers |
 | DeepSeek API | LLM for parsing, routing, evidence extraction | — |
@@ -279,7 +279,7 @@ flowchart TD
 
 | 来源 | 类型 | 覆盖范围 |
 |------|------|----------|
-| [CIViC](https://civicdb.org) | 专家审编变异证据（A–E 级） | 特定变异 |
+| [CIViC](https://civicdb.org) | 专家审编变异证据（A–E 级） | 癌症中的变异 |
 | [DGIdb](https://dgidb.org) | 药物-基因交互数据库 | 全基因组 |
 | [Europe PMC](https://europepmc.org) | 生物医学文献（摘要） | 4000 万+ 论文 |
 | DeepSeek API | 解析 / 路由 / 证据提取 | — |
@@ -300,7 +300,7 @@ agent/
 
 ## 🔬 示例
 
-**输入**（自由文本，中英文均可）：
+**输入**（自由文本）：
 
 > 子宫内膜癌样本中 PTEN 下调，PIK3CA 突变，CCND1 上调，请评估潜在靶点。
 
@@ -308,38 +308,77 @@ agent/
 
 | # | 靶点 | 评分 | 来源 | 匹配药物 |
 |---|------|------|------|----------|
-| 1 | PIK3CA | 27/30 | CIViC (B 级, 癌种匹配) | Taselisib, Capivasertib |
-| 2 | CCND1 | 13/30 | DGIdb + 文献 ↑ | Palbociclib, Ribociclib |
-| 3 | PTEN | 13/30 | DGIdb + 文献 ↑ | Ipatasertib, Everolimus |
+| 1 | PIK3CA | 27/30 | CIViC (B 级, 癌种匹配) | Taselisib, Capivasertib, Palbociclib |
+| 2 | CCND1 | 13/30 | DGIdb + 文献 ↑ | Palbociclib, Ribociclib, Abemaciclib |
+| 3 | PTEN | 13/30 | DGIdb + 文献 ↑ | Ipatasertib, Capivasertib, Everolimus |
 
 <details>
 <summary>🔍 PIK3CA — CIViC 直接匹配（点击展开）</summary>
 
 | 维度 | 评分 | 依据 |
 |------|------|------|
-| Druggability | 10 | CIViC B 级 predictive 证据 |
-| Specificity | 8 | 癌种匹配：Endometrial Cancer |
-| Evidence Level | 9 | CIViC 基础分 + 癌种加分 (+1) |
+| 成药性 | 10 | CIViC B 级 predictive 证据 |
+| 特异性 | 8 | 癌种匹配：Endometrial Cancer |
+| 证据等级 | 9 | CIViC 基础分 + 癌种加分 (+1) |
 
-> CIViC 10 条证据，最高 B 级，predictive，字符串匹配到子宫内膜癌。无需触发文献检索。
+**匹配药物** (14): Taselisib, Capivasertib, Pictilisib, Palbociclib, Temsirolimus, Trametinib, Everolimus 等。
+
+> 🔬 CIViC 10 条证据，最高 B 级，predictive，字符串匹配到子宫内膜癌。无需触发文献检索——CIViC 质量足够。
 </details>
 
 <details>
 <summary>📚 CCND1 — 触发文献检索（点击展开）</summary>
 
+| 维度 | 评分 | 依据 |
+|------|------|------|
+| 成药性 | 5 | DGIdb 有药物交互，癌种特异性未验证 |
+| 特异性 | 5 | 有药物交互 |
+| 证据等级 | 3 | DGIdb-only 基础分 |
+
+**匹配药物** (23): Palbociclib, Ribociclib, Abemaciclib, Briciclib 等。
+
+---
+
 **文献评估** — `moderate`（confidence: medium）· Action: ⬆ BOOST
 
 **证据类型**: driver, therapeutic_target, drug_sensitivity, functional, preclinical
 
-> CCND1 过表达与子宫内膜癌相关。PMID 39940659 显示 CCND1 在早期子宫内膜样癌中高表达。PMID 41560755 通过 CRISPR 筛选证实 CCND1/CDK4/6 轴可作为 CDK4/6 抑制剂治疗靶点。
+> CCND1 过表达与子宫内膜癌相关。PMID 39940659 显示 CCND1 在早期子宫内膜样癌和增生中高表达，提示驱动和预后作用。PMID 41560755 通过 CRISPR 筛选和功能实验直接证实 CCND1/CDK4/6 轴可作为 CDK4/6 抑制剂治疗靶点。
 
-**局限**: 仅临床前数据，无临床试验。
+**局限**: 仅临床前数据（细胞系和动物模型），无临床试验。
+
+**来源**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 篇文献 via 3 条查询
 
 | 📄 PMID | 标题 | 年份 |
 |---------|------|------|
 | 41744888 | Endocrine Therapy for Endometrial Carcinoma | 2026 |
 | 39940659 | Cyclin D1 Expression in Endometrial Cancer | 2025 |
 | 41560755 | NEK6 and CDK4/6 inhibitor sensitivity in EC | 2025 |
+
+</details>
+
+<details>
+<summary>📚 PTEN — 触发文献检索（点击展开）</summary>
+
+| 维度 | 评分 | 依据 |
+|------|------|------|
+| 成药性 | 5 | DGIdb 有药物交互 |
+| 特异性 | 5 | 有药物交互 |
+| 证据等级 | 3 | DGIdb-only 基础分 |
+
+**匹配药物** (22): Ipatasertib, Capivasertib, Everolimus, AZD8186 等。
+
+---
+
+**文献评估** — `moderate`（confidence: medium）· Action: ⬆ BOOST
+
+**证据类型**: therapeutic_target, preclinical
+
+> PTEN 缺失的子宫内膜样癌小鼠模型中，HDAC1 抑制可能是治疗靶点 (PMID 41563767)。综述讨论了子宫内膜癌中 PTEN 突变与合成致死概念 (PMID 41383404)。
+
+**局限**: 仅临床前（小鼠模型）；无临床数据。
+
+**来源**: EXPRESSION_GENE_CONTEXT_NEEDED · 5 篇文献 via 3 条查询
 
 </details>
 
